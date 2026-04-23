@@ -9,6 +9,7 @@ import { packetsReplayState } from '../react/state/packetsReplayState'
 import { getFixedFilesize } from '../react/simpleUtils'
 import { appQueryParams } from '../appParams'
 import { LocalServer } from '../customServer'
+import { appViewer } from '../appViewer'
 
 const SUPPORTED_FORMAT_VERSION = 1
 
@@ -136,17 +137,38 @@ const mainPacketsReplayer = async (client: ServerClient, packets: ParsedReplayPa
   const syncReplayEntity = (entityId: number, moved: boolean) => {
     const entity = bot.entities[entityId]
     const state = replayEntityStates.get(entityId)
-    if (!entity || !state || !entity.position) return
-    entity.position.x = state.x
-    entity.position.y = state.y
-    entity.position.z = state.z
-    if (state.yaw !== undefined) {
-      entity.yaw = state.yaw
+    if (!state) return
+
+    if (entity?.position) {
+      entity.position.x = state.x
+      entity.position.y = state.y
+      entity.position.z = state.z
+      if (state.yaw !== undefined) {
+        entity.yaw = state.yaw
+      }
+      if (state.pitch !== undefined) {
+        entity.pitch = state.pitch
+      }
+      bot.emit(moved ? 'entityMoved' : 'entityUpdate', entity)
     }
-    if (state.pitch !== undefined) {
-      entity.pitch = state.pitch
+
+    const renderEntity = {
+      ...(entity ?? {}),
+      id: entityId,
+      name: entity?.name ?? ((entity?.type === 'player' || entity?.username !== undefined) ? 'player' : 'player'),
+      type: entity?.type ?? 'player',
+      username: entity?.username,
+      uuid: entity?.uuid,
+      yaw: state.yaw ?? entity?.yaw ?? 0,
+      pitch: state.pitch ?? entity?.pitch ?? 0,
+      position: { x: state.x, y: state.y, z: state.z },
+      pos: { x: state.x, y: state.y, z: state.z },
+      metadata: entity?.metadata,
+      equipment: entity?.equipment,
+      height: entity?.height,
+      width: entity?.width,
     }
-    bot.emit(moved ? 'entityMoved' : 'entityUpdate', entity)
+    appViewer.worldView?.emit(moved ? 'entityMoved' : 'entity', renderEntity)
   }
 
   const applyReplayEntityPacket = (name: string, data: any) => {
