@@ -222,8 +222,11 @@ subscribeKey(miscUiState, 'gameLoaded', async () => {
   registerEvents()
 })
 
-subscribeKey(resourcePackState, 'resourcePackInstalled', async () => {
-  await updateResourcePack()
+queueMicrotask(() => {
+  if (!resourcePackState) return
+  subscribeKey(resourcePackState, 'resourcePackInstalled', async () => {
+    await updateResourcePack()
+  })
 })
 
 export const downloadSoundsIfNeeded = async () => {
