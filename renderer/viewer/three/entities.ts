@@ -31,6 +31,16 @@ import { armorModel, armorTextures, elytraTexture } from './entity/armorModels'
 import { WorldRendererThree } from './worldrendererThree'
 import { packetsReplayState } from '../../../src/react/state/packetsReplayState'
 
+const replayDebugEnabled = typeof location !== 'undefined' && /(?:\?|&)replayDebugPos=1(?:&|$)/.test(location.search)
+const replayDebugVec = (pos: any) => {
+  if (!pos) return null
+  return {
+    x: Number(Number(pos.x ?? 0).toFixed(3)),
+    y: Number(Number(pos.y ?? 0).toFixed(3)),
+    z: Number(Number(pos.z ?? 0).toFixed(3)),
+  }
+}
+
 export const steveTexture = loadThreeJsTextureFromUrl(stevePngUrl)
 
 export const TWEEN_DURATION = 120
@@ -1146,6 +1156,20 @@ export class Entities {
     const ANIMATION_DURATION = justAdded ? 0 : TWEEN_DURATION
     const replayInstantUpdate = packetsReplayState.isOpen
     const position = (entity as any).pos ?? entity.position
+    if (replayDebugEnabled && packetsReplayState.isOpen && position) {
+      console.log('[ReplayPos]', {
+        kind: 'render-apply',
+        entityId: entity.id,
+        justAdded,
+        replayInstantUpdate,
+        currentPos: replayDebugVec(e.position),
+        targetPos: replayDebugVec(position),
+        yaw: entity.yaw,
+        pitch: entity.pitch,
+        username: (entity as any).username,
+        name: (entity as any).name,
+      })
+    }
     if (position) {
       animatedEntity._positionTween?.stop()
       if (replayInstantUpdate || ANIMATION_DURATION === 0) {

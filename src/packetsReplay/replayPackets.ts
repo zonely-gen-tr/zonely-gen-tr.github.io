@@ -11,6 +11,33 @@ import { appQueryParams } from '../appParams'
 import { LocalServer } from '../customServer'
 
 const SUPPORTED_FORMAT_VERSION = 1
+const replayDebugEnabled = typeof location !== 'undefined' && /(?:\?|&)replayDebugPos=1(?:&|$)/.test(location.search)
+const replayDebugHistory = (() => {
+  const g = globalThis as any
+  g.__replayDebugHistory ??= []
+  return g.__replayDebugHistory as any[]
+})()
+
+const replayDebugVec = (pos: any) => {
+  if (!pos) return null
+  return {
+    x: Number(Number(pos.x ?? 0).toFixed(3)),
+    y: Number(Number(pos.y ?? 0).toFixed(3)),
+    z: Number(Number(pos.z ?? 0).toFixed(3)),
+  }
+}
+
+const replayDebugPush = (entry: Record<string, any>) => {
+  if (!replayDebugEnabled) return
+  replayDebugHistory.push({
+    time: Date.now(),
+    ...entry,
+  })
+  if (replayDebugHistory.length > 500) {
+    replayDebugHistory.splice(0, replayDebugHistory.length - 500)
+  }
+  console.log('[ReplayPos]', entry)
+}
 
 type ReplayDefinition = {
   minecraftVersion: string
@@ -133,10 +160,13 @@ const packetAngleToRadians = (angle: unknown) => {
 const mainPacketsReplayer = async (client: ServerClient, packets: ParsedReplayPacket[], ignoreClientPacketsWait: string[] | true = []) => {
   const replayEntityStates = new Map<number, ReplayEntityState>()
 
-  const syncReplayEntity = (entityId: number, moved: boolean) => {
+  const syncReplayEntity = (entityId: number, moved: boolean, sourcePacket: string) => {
     const entity = bot.entities[entityId]
     const state = replayEntityStates.get(entityId)
     if (!state) return
+    const sceneEntity = (globalThis as any).world?.entities?.entities?.[entityId]
+    const botBefore = replayDebugVec(entity?.position)
+    const sceneBefore = replayDebugVec(sceneEntity?.position)
 
     if (entity?.position) {
       entity.position.x = state.x
@@ -151,7 +181,6 @@ const mainPacketsReplayer = async (client: ServerClient, packets: ParsedReplayPa
       bot.emit(moved ? 'entityMoved' : 'entityUpdate', entity)
     }
 
-    const sceneEntity = (globalThis as any).world?.entities?.entities?.[entityId]
     if (sceneEntity?.position) {
       sceneEntity.position.set(state.x, state.y, state.z)
       if (sceneEntity.originalEntity?.position) {
@@ -169,6 +198,20 @@ const mainPacketsReplayer = async (client: ServerClient, packets: ParsedReplayPa
         sceneEntity.originalEntity.pitch = state.pitch
       }
     }
+
+    replayDebugPush({
+      kind: 'sync',
+      packet: sourcePacket,
+      moved,
+      entityId,
+      state: replayDebugVec(state),
+      botBefore,
+      botAfter: replayDebugVec(entity?.position),
+      sceneBefore,
+      sceneAfter: replayDebugVec(sceneEntity?.position),
+      yaw: state.yaw !== undefined ? Number(state.yaw.toFixed(3)) : undefined,
+      pitch: state.pitch !== undefined ? Number(state.pitch.toFixed(3)) : undefined,
+    })
   }
 
   const applyReplayEntityPacket = (name: string, data: any) => {
@@ -189,7 +232,7 @@ const mainPacketsReplayer = async (client: ServerClient, packets: ParsedReplayPa
           yaw: packetAngleToRadians(data.yaw),
           pitch: packetAngleToRadians(data.pitch),
         })
-        syncReplayEntity(entityId, false)
+        syncReplayEntity(entityId, false, name)
         return
       case 'rel_entity_move':
       case 'entity_move_look': {
@@ -209,7 +252,7 @@ const mainPacketsReplayer = async (client: ServerClient, packets: ParsedReplayPa
           if (pitch !== undefined) next.pitch = pitch
         }
         replayEntityStates.set(entityId, next)
-        syncReplayEntity(entityId, true)
+        syncReplayEntity(entityId, true, name)
         return
       }
       case 'entity_teleport': {
@@ -226,7 +269,7 @@ const mainPacketsReplayer = async (client: ServerClient, packets: ParsedReplayPa
         if (yaw !== undefined) next.yaw = yaw
         if (pitch !== undefined) next.pitch = pitch
         replayEntityStates.set(entityId, next)
-        syncReplayEntity(entityId, true)
+        syncReplayEntity(entityId, true, name)
         return
       }
       case 'entity_look': {
@@ -239,7 +282,7 @@ const mainPacketsReplayer = async (client: ServerClient, packets: ParsedReplayPa
         if (yaw !== undefined) next.yaw = yaw
         if (pitch !== undefined) next.pitch = pitch
         replayEntityStates.set(entityId, next)
-        syncReplayEntity(entityId, false)
+        syncReplayEntity(entityId, false, name)
         return
       }
       case 'entity_destroy':

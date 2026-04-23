@@ -31,6 +31,16 @@ import { FireworksManager } from './fireworks'
 import { downloadWorldGeometry } from './worldGeometryExport'
 import { packetsReplayState } from '../../../src/react/state/packetsReplayState'
 
+const replayDebugEnabled = typeof location !== 'undefined' && /(?:\?|&)replayDebugPos=1(?:&|$)/.test(location.search)
+const replayDebugVec = (pos: any) => {
+  if (!pos) return null
+  return {
+    x: Number(Number(pos.x ?? 0).toFixed(3)),
+    y: Number(Number(pos.y ?? 0).toFixed(3)),
+    z: Number(Number(pos.z ?? 0).toFixed(3)),
+  }
+}
+
 type SectionKey = string
 
 export class WorldRendererThree extends WorldRendererCommon {
@@ -148,6 +158,31 @@ export class WorldRendererThree extends WorldRendererCommon {
   }
 
   updateEntity (e, isPosUpdate = false) {
+    if (replayDebugEnabled && packetsReplayState.isOpen) {
+      const sceneEntity = this.entities.entities[e.id]
+      const scenePos = sceneEntity?.position
+      const targetPos = e?.position ?? e?.pos
+      const delta = scenePos && targetPos
+        ? Math.sqrt(
+          ((scenePos.x ?? 0) - (targetPos.x ?? 0)) ** 2 +
+          ((scenePos.y ?? 0) - (targetPos.y ?? 0)) ** 2 +
+          ((scenePos.z ?? 0) - (targetPos.z ?? 0)) ** 2
+        )
+        : 0
+      if (delta > 0.05 || isPosUpdate) {
+        console.log('[ReplayPos]', {
+          kind: 'renderer-update',
+          entityId: e?.id,
+          isPosUpdate,
+          scenePos: replayDebugVec(scenePos),
+          targetPos: replayDebugVec(targetPos),
+          yaw: e?.yaw,
+          pitch: e?.pitch,
+          username: e?.username,
+          name: e?.name,
+        })
+      }
+    }
     const overrides = {
       rotation: {
         head: {
