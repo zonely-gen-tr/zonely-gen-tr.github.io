@@ -234,6 +234,30 @@ const mainPacketsReplayer = async (client: ServerClient, packets: ParsedReplayPa
 
   const writePacket = (name: string, data: any) => {
     data = restoreData(data)
+    if (name === 'entity_move_look') {
+      const hasMove = Number(data.dX ?? 0) !== 0 || Number(data.dY ?? 0) !== 0 || Number(data.dZ ?? 0) !== 0
+      const hasLook = data.yaw !== undefined || data.pitch !== undefined
+      if (hasMove) {
+        client.write('rel_entity_move', {
+          entityId: data.entityId,
+          dX: data.dX,
+          dY: data.dY,
+          dZ: data.dZ,
+          onGround: data.onGround,
+        })
+        applyReplayEntityPacket('rel_entity_move', data)
+      }
+      if (hasLook) {
+        client.write('entity_look', {
+          entityId: data.entityId,
+          yaw: data.yaw,
+          pitch: data.pitch,
+          onGround: data.onGround,
+        })
+        applyReplayEntityPacket('entity_look', data)
+      }
+      return
+    }
     client.write(name, data)
     applyReplayEntityPacket(name, data)
   }
