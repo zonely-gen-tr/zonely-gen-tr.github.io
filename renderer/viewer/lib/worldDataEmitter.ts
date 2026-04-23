@@ -95,6 +95,7 @@ export class WorldDataEmitter extends (EventEmitter as new () => TypedEmitter<Wo
 
   listenToBot (bot: typeof __type_bot) {
     const entitiesObjectData = new Map<string, number>()
+    const knownEntityNames = new Map<string | number, string>()
     bot._client.prependListener('spawn_entity', (data) => {
       if (data.objectData && data.entityId !== undefined) {
         entitiesObjectData.set(data.entityId, data.objectData)
@@ -109,10 +110,13 @@ export class WorldDataEmitter extends (EventEmitter as new () => TypedEmitter<Wo
         }
         return
       }
-      if (!e.name) return // mineflayer received update for not spawned entity
+      const normalizedName = e.name ?? knownEntityNames.get(e.id) ?? ((e.type === 'player' || e.username !== undefined) ? 'player' : undefined)
+      if (!normalizedName) return // mineflayer received update for not spawned entity
+      knownEntityNames.set(e.id, normalizedName)
       e.objectData = entitiesObjectData.get(e.id)
       this.emitter.emit(name as any, {
         ...e,
+        name: normalizedName,
         position: e.position,
         pos: e.position,
         username: e.username,
@@ -142,6 +146,7 @@ export class WorldDataEmitter extends (EventEmitter as new () => TypedEmitter<Wo
         emitEntity(e, 'entityMoved')
       },
       entityGone: (e: any) => {
+        knownEntityNames.delete(e.id)
         this.emitter.emit('entity', { id: e.id, delete: true })
       },
       chunkColumnLoad: (pos: Vec3) => {
