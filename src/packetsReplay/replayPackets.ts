@@ -150,6 +150,25 @@ const mainPacketsReplayer = async (client: ServerClient, packets: ParsedReplayPa
       }
       bot.emit(moved ? 'entityMoved' : 'entityUpdate', entity)
     }
+
+    const sceneEntity = (globalThis as any).world?.entities?.entities?.[entityId]
+    if (sceneEntity?.position) {
+      sceneEntity.position.set(state.x, state.y, state.z)
+      if (sceneEntity.originalEntity?.position) {
+        sceneEntity.originalEntity.position.x = state.x
+        sceneEntity.originalEntity.position.y = state.y
+        sceneEntity.originalEntity.position.z = state.z
+      }
+      if (state.yaw !== undefined) {
+        sceneEntity.rotation.y = state.yaw
+        if (sceneEntity.originalEntity) {
+          sceneEntity.originalEntity.yaw = state.yaw
+        }
+      }
+      if (state.pitch !== undefined && sceneEntity.originalEntity) {
+        sceneEntity.originalEntity.pitch = state.pitch
+      }
+    }
   }
 
   const applyReplayEntityPacket = (name: string, data: any) => {
