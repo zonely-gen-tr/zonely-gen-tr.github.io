@@ -381,9 +381,16 @@ export class Entities {
         pitch?: number
         updatedAt?: number
       }
+      const replayMotion = (entity as any).__replayMotion as undefined | {
+        dx: number
+        dz: number
+        horizontal: number
+        speed: number
+        updatedAt: number
+      }
 
       if (packetsReplayState.isOpen && replayTarget) {
-        const alpha = Math.min(1, dt * 14)
+        const alpha = Math.min(1, dt * 28)
         const distX = replayTarget.x - entity.position.x
         const distY = replayTarget.y - entity.position.y
         const distZ = replayTarget.z - entity.position.z
@@ -394,12 +401,14 @@ export class Entities {
           entity.position.set(replayTarget.x, replayTarget.y, replayTarget.z)
         }
         if (replayTarget.yaw !== undefined) {
-          entity.rotation.y = approachAngle(entity.rotation.y, replayTarget.yaw, alpha)
+          entity.rotation.y = approachAngle(entity.rotation.y, replayTarget.yaw, Math.min(1, dt * 22))
         }
         if (playerObject?.animation instanceof WalkingGeneralSwing) {
+          const recentMotion = !!(replayMotion && (performance.now() - replayMotion.updatedAt) < 220)
           const horizontalGap = Math.hypot(replayTarget.x - entity.position.x, replayTarget.z - entity.position.z)
-          playerObject.animation.isMoving = horizontalGap > 0.015
-          playerObject.animation.isRunning = horizontalGap > 0.08
+          const horizontalMotion = recentMotion ? Math.max(horizontalGap, replayMotion.horizontal) : horizontalGap
+          playerObject.animation.isMoving = horizontalMotion > 0.01
+          playerObject.animation.isRunning = horizontalMotion > 0.08
         }
       }
 

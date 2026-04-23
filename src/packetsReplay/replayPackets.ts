@@ -190,6 +190,12 @@ const mainPacketsReplayer = async (client: ServerClient, packets: ParsedReplayPa
     }
 
     if (sceneEntity?.position) {
+      const prevTarget = sceneEntity.__replayTarget as undefined | {
+        x: number
+        y: number
+        z: number
+        updatedAt?: number
+      }
       const replayTarget = {
         x: state.x,
         y: state.y,
@@ -199,6 +205,18 @@ const mainPacketsReplayer = async (client: ServerClient, packets: ParsedReplayPa
         updatedAt: state.updatedAt ?? performance.now(),
       }
       sceneEntity.__replayTarget = replayTarget
+      if (prevTarget) {
+        const dtMs = Math.max(1, replayTarget.updatedAt - (prevTarget.updatedAt ?? replayTarget.updatedAt))
+        const dx = replayTarget.x - prevTarget.x
+        const dz = replayTarget.z - prevTarget.z
+        sceneEntity.__replayMotion = {
+          dx,
+          dz,
+          horizontal: Math.hypot(dx, dz),
+          speed: Math.hypot(dx, dz) / dtMs,
+          updatedAt: replayTarget.updatedAt,
+        }
+      }
       if (!sceneEntity.__replayInitialized || !moved) {
         sceneEntity.position.set(state.x, state.y, state.z)
         sceneEntity.__replayInitialized = true
