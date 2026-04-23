@@ -115,11 +115,124 @@ const IGNORE_SERVER_PACKETS = new Set([
 ])
 
 const ADDITIONAL_DELAY = 500
+const REPLAY_RELATIVE_MOVE_SCALE = 4096
+
+type ReplayEntityState = {
+  x: number
+  y: number
+  z: number
+  yaw?: number
+  pitch?: number
+}
+
+const packetAngleToRadians = (angle: unknown) => {
+  if (typeof angle !== 'number') return undefined
+  return angle / 256 * Math.PI * 2
+}
 
 const mainPacketsReplayer = async (client: ServerClient, packets: ParsedReplayPacket[], ignoreClientPacketsWait: string[] | true = []) => {
+  const replayEntityStates = new Map<number, ReplayEntityState>()
+
+  const syncReplayEntity = (entityId: number, moved: boolean) => {
+    const entity = bot.entities[entityId]
+    const state = replayEntityStates.get(entityId)
+    if (!entity || !state || !entity.position) return
+    entity.position.x = state.x
+    entity.position.y = state.y
+    entity.position.z = state.z
+    if (state.yaw !== undefined) {
+      entity.yaw = state.yaw
+    }
+    if (state.pitch !== undefined) {
+      entity.pitch = state.pitch
+    }
+    bot.emit(moved ? 'entityMoved' : 'entityUpdate', entity)
+  }
+
+  const applyReplayEntityPacket = (name: string, data: any) => {
+    if (!data || typeof data !== 'object') return
+    const entityId = typeof data.entityId === 'number' ? data.entityId : undefined
+
+    switch (name) {
+      case 'named_entity_spawn':
+      case 'spawn_entity':
+      case 'spawn_entity_living':
+      case 'spawn_entity_experience_orb':
+      case 'spawn_entity_weather':
+        if (entityId === undefined) return
+        replayEntityStates.set(entityId, {
+          x: Number(data.x ?? 0),
+          y: Number(data.y ?? 0),
+          z: Number(data.z ?? 0),
+          yaw: packetAngleToRadians(data.yaw),
+          pitch: packetAngleToRadians(data.pitch),
+        })
+        syncReplayEntity(entityId, false)
+        return
+      case 'rel_entity_move':
+      case 'entity_move_look': {
+        if (entityId === undefined) return
+        const prev = replayEntityStates.get(entityId)
+        if (!prev) return
+        const next: ReplayEntityState = {
+          ...prev,
+          x: prev.x + (Number(data.dX ?? 0) / REPLAY_RELATIVE_MOVE_SCALE),
+          y: prev.y + (Number(data.dY ?? 0) / REPLAY_RELATIVE_MOVE_SCALE),
+          z: prev.z + (Number(data.dZ ?? 0) / REPLAY_RELATIVE_MOVE_SCALE),
+        }
+        if (name === 'entity_move_look') {
+          const yaw = packetAngleToRadians(data.yaw)
+          const pitch = packetAngleToRadians(data.pitch)
+          if (yaw !== undefined) next.yaw = yaw
+          if (pitch !== undefined) next.pitch = pitch
+        }
+        replayEntityStates.set(entityId, next)
+        syncReplayEntity(entityId, true)
+        return
+      }
+      case 'entity_teleport': {
+        if (entityId === undefined) return
+        const prev = replayEntityStates.get(entityId) ?? { x: 0, y: 0, z: 0 }
+        const next: ReplayEntityState = {
+          ...prev,
+          x: Number(data.x ?? prev.x),
+          y: Number(data.y ?? prev.y),
+          z: Number(data.z ?? prev.z),
+        }
+        const yaw = packetAngleToRadians(data.yaw)
+        const pitch = packetAngleToRadians(data.pitch)
+        if (yaw !== undefined) next.yaw = yaw
+        if (pitch !== undefined) next.pitch = pitch
+        replayEntityStates.set(entityId, next)
+        syncReplayEntity(entityId, true)
+        return
+      }
+      case 'entity_look': {
+        if (entityId === undefined) return
+        const prev = replayEntityStates.get(entityId)
+        if (!prev) return
+        const next: ReplayEntityState = { ...prev }
+        const yaw = packetAngleToRadians(data.yaw)
+        const pitch = packetAngleToRadians(data.pitch)
+        if (yaw !== undefined) next.yaw = yaw
+        if (pitch !== undefined) next.pitch = pitch
+        replayEntityStates.set(entityId, next)
+        syncReplayEntity(entityId, true)
+        return
+      }
+      case 'entity_destroy':
+      case 'destroy_entity':
+        for (const id of Array.isArray(data.entityIds) ? data.entityIds : (entityId !== undefined ? [entityId] : [])) {
+          replayEntityStates.delete(Number(id))
+        }
+        return
+    }
+  }
+
   const writePacket = (name: string, data: any) => {
     data = restoreData(data)
     client.write(name, data)
+    applyReplayEntityPacket(name, data)
   }
 
   const playPackets = packets.filter(p => p.state === 'play')
