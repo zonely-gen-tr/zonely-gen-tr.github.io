@@ -11,6 +11,32 @@ import { Biome } from 'minecraft-data'
 import { delayedIterator } from '../../playground/shared'
 import { chunkPos } from './simpleUtils'
 
+const replayDebugEnabled = typeof location !== 'undefined' && /(?:\?|&)replayDebugPos=1(?:&|$)/.test(location.search)
+const replayDebugHistory = (() => {
+  const g = globalThis as any
+  g.__replayDebugHistory ??= []
+  return g.__replayDebugHistory as any[]
+})()
+const replayDebugVec = (pos: any) => {
+  if (!pos) return null
+  return {
+    x: Number(Number(pos.x ?? 0).toFixed(3)),
+    y: Number(Number(pos.y ?? 0).toFixed(3)),
+    z: Number(Number(pos.z ?? 0).toFixed(3)),
+  }
+}
+const replayDebugPush = (entry: Record<string, any>) => {
+  if (!replayDebugEnabled) return
+  replayDebugHistory.push({
+    time: Date.now(),
+    ...entry,
+  })
+  if (replayDebugHistory.length > 500) {
+    replayDebugHistory.splice(0, replayDebugHistory.length - 500)
+  }
+  console.log('[ReplayPos]', entry)
+}
+
 export type ChunkPosKey = string // like '16,16'
 type ChunkPos = { x: number, z: number } // like { x: 16, z: 16 }
 
@@ -112,10 +138,33 @@ export class WorldDataEmitter extends (EventEmitter as new () => TypedEmitter<Wo
       }
       const replayState = (globalThis as any).__replayEntityStates?.get?.(e.id)
       if (replayState) {
+        const incomingPos = replayDebugVec(e.position)
         e.position = new Vec3(replayState.x, replayState.y, replayState.z)
         e.pos = e.position
         if (replayState.yaw !== undefined) e.yaw = replayState.yaw
         if (replayState.pitch !== undefined) e.pitch = replayState.pitch
+        const overriddenPos = replayDebugVec(e.position)
+        if (
+          replayDebugEnabled
+          && incomingPos
+          && (
+            incomingPos.x !== overriddenPos?.x
+            || incomingPos.y !== overriddenPos?.y
+            || incomingPos.z !== overriddenPos?.z
+          )
+        ) {
+          replayDebugPush({
+            kind: 'emitter-override',
+            entityId: e.id,
+            event: name,
+            incomingPos,
+            replayPos: overriddenPos,
+            yaw: replayState.yaw !== undefined ? Number(replayState.yaw.toFixed(3)) : undefined,
+            pitch: replayState.pitch !== undefined ? Number(replayState.pitch.toFixed(3)) : undefined,
+            username: e.username,
+            name: e.name,
+          })
+        }
       }
       const normalizedName = e.name ?? knownEntityNames.get(e.id) ?? ((e.type === 'player' || e.username !== undefined) ? 'player' : undefined)
       if (!normalizedName) return // mineflayer received update for not spawned entity
