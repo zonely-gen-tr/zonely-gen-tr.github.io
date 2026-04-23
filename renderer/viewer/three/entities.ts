@@ -29,6 +29,7 @@ import { WalkingGeneralSwing } from './entity/animations'
 import { disposeObject, loadTexture, loadThreeJsTextureFromUrl } from './threeJsUtils'
 import { armorModel, armorTextures, elytraTexture } from './entity/armorModels'
 import { WorldRendererThree } from './worldrendererThree'
+import { packetsReplayState } from '../../../src/react/state/packetsReplayState'
 
 export const steveTexture = loadThreeJsTextureFromUrl(stevePngUrl)
 
@@ -1143,20 +1144,31 @@ export class Entities {
       _rotationTween?: TWEEN.Tween<any>
     }
     const ANIMATION_DURATION = justAdded ? 0 : TWEEN_DURATION
+    const replayInstantUpdate = packetsReplayState.isOpen
     const position = (entity as any).pos ?? entity.position
     if (position) {
       animatedEntity._positionTween?.stop()
-      animatedEntity._positionTween = new TWEEN.Tween(e.position)
-        .to({ x: position.x, y: position.y, z: position.z }, ANIMATION_DURATION)
-        .start()
+      if (replayInstantUpdate || ANIMATION_DURATION === 0) {
+        e.position.set(position.x, position.y, position.z)
+        animatedEntity._positionTween = undefined
+      } else {
+        animatedEntity._positionTween = new TWEEN.Tween(e.position)
+          .to({ x: position.x, y: position.y, z: position.z }, ANIMATION_DURATION)
+          .start()
+      }
     }
     if (entity.yaw) {
-      const da = (entity.yaw - e.rotation.y) % (Math.PI * 2)
-      const dy = 2 * da % (Math.PI * 2) - da
       animatedEntity._rotationTween?.stop()
-      animatedEntity._rotationTween = new TWEEN.Tween(e.rotation)
-        .to({ y: e.rotation.y + dy }, ANIMATION_DURATION)
-        .start()
+      if (replayInstantUpdate || ANIMATION_DURATION === 0) {
+        e.rotation.y = entity.yaw
+        animatedEntity._rotationTween = undefined
+      } else {
+        const da = (entity.yaw - e.rotation.y) % (Math.PI * 2)
+        const dy = 2 * da % (Math.PI * 2) - da
+        animatedEntity._rotationTween = new TWEEN.Tween(e.rotation)
+          .to({ y: e.rotation.y + dy }, ANIMATION_DURATION)
+          .start()
+      }
     }
 
     if (e?.playerObject && overrides?.rotation?.head) {
