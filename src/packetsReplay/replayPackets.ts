@@ -9,7 +9,6 @@ import { packetsReplayState } from '../react/state/packetsReplayState'
 import { getFixedFilesize } from '../react/simpleUtils'
 import { appQueryParams } from '../appParams'
 import { LocalServer } from '../customServer'
-import { appViewer } from '../appViewer'
 
 const SUPPORTED_FORMAT_VERSION = 1
 
@@ -151,24 +150,6 @@ const mainPacketsReplayer = async (client: ServerClient, packets: ParsedReplayPa
       }
       bot.emit(moved ? 'entityMoved' : 'entityUpdate', entity)
     }
-
-    const renderEntity = {
-      ...(entity ?? {}),
-      id: entityId,
-      name: entity?.name ?? ((entity?.type === 'player' || entity?.username !== undefined) ? 'player' : 'player'),
-      type: entity?.type ?? 'player',
-      username: entity?.username,
-      uuid: entity?.uuid,
-      yaw: state.yaw ?? entity?.yaw ?? 0,
-      pitch: state.pitch ?? entity?.pitch ?? 0,
-      position: { x: state.x, y: state.y, z: state.z },
-      pos: { x: state.x, y: state.y, z: state.z },
-      metadata: entity?.metadata,
-      equipment: entity?.equipment,
-      height: entity?.height,
-      width: entity?.width,
-    }
-    appViewer.worldView?.emit(moved ? 'entityMoved' : 'entity', renderEntity)
   }
 
   const applyReplayEntityPacket = (name: string, data: any) => {
@@ -239,7 +220,7 @@ const mainPacketsReplayer = async (client: ServerClient, packets: ParsedReplayPa
         if (yaw !== undefined) next.yaw = yaw
         if (pitch !== undefined) next.pitch = pitch
         replayEntityStates.set(entityId, next)
-        syncReplayEntity(entityId, true)
+        syncReplayEntity(entityId, false)
         return
       }
       case 'entity_destroy':
