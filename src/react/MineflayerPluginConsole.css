@@ -1,0 +1,108 @@
+.console-wrapper {
+  position: fixed;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.console-messages-wrapper {
+  bottom: 45px;
+  max-height: 180px;
+}
+
+.console-input-wrapper {
+  bottom: 0;
+}
+
+.console-input-wrapper.input-mobile {
+  top: 0;
+  bottom: auto;
+}
+
+.console-messages-wrapper.display-mobile {
+  bottom: 0;
+  top: 45px;
+}
+
+.console {
+  margin: 0;
+  padding: 4px;
+  background-color: rgba(0, 0, 0, 0.5);
+  pointer-events: all;
+  overflow-y: auto;
+  max-height: inherit;
+  display: none;
+  user-select: text;
+}
+
+.console.opened {
+  display: block;
+}
+
+.console-message {
+  color: white;
+  font-family: monospace;
+  white-space: pre-wrap;
+  list-style: none;
+  margin: 2px 0;
+}
+
+.console-message-prefix {
+  color: dodgerblue;
+  margin-right: 8px;
+}
+
+.console-message-repl {
+  color: purple;
+}
+
+.console-message-error {
+  color: #ff4444;
+}
+
+.console-message-warn {
+  color: #ffbb33;
+}
+
+.console-input {
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 8px;
+  pointer-events: all;
+}
+
+.console-input-container {
+  display: flex;
+  align-items: center;
+}
+
+.console-input-prefix {
+  color: dodgerblue;
+  font-family: monospace;
+  margin-right: 8px;
+}
+
+.console-input-field {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: dodgerblue;
+  font-family: monospace;
+  outline: none;
+  padding: 0;
+}
+
+.console-input-field:focus {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.console-input-field::placeholder {
+  color: rgba(30, 144, 255, 0.5);
+}
+
+.console-mobile-hidden {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}

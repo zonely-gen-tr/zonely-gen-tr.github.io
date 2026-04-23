@@ -1,0 +1,86 @@
+{
+  "name": "mcraft-fun-mineflayer",
+  "version": "0.1.23",
+  "author": "Vitaly Turovsky <vital2580@icloud.com>",
+  "license": "MIT",
+  "description": "Mineflayer viewer (connector) for mcraft.fun project and vanilla Minecraft client! Both TCP and WebSockets servers are supported.",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "files": [
+    "build"
+  ],
+  "release": {
+    "preset": {
+      "runTest": false
+    },
+    "sharedActionsOverride": {
+      "runTest": false
+    }
+  },
+  "peerDependencies": {
+    "@roamhq/wrtc": "*",
+    "mineflayer": ">=4.x"
+  },
+  "peerDependenciesMeta": {
+    "@roamhq/wrtc": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@roamhq/wrtc": "^0.8.0",
+    "@types/react": "^19.0.8",
+    "@types/ws": "^8.5.13",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@zardoy/tsconfig": "^1.5.1",
+    "chalk": "^5.4.1",
+    "dotenv": "^16.4.7",
+    "mineflayer": "^4.26.0",
+    "peerjs": "^1.5.4",
+    "prismarine-entity": "^2.5.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "styled-components": "^6.1.15",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.2",
+    "valtio": "^1.13.0",
+    "vite": "^6.1.0",
+    "vitest": "^3.0.8"
+  },
+  "dependencies": {
+    "@zardoy/flying-squid": "^0.0.49",
+    "exit-hook": "2.2.1",
+    "minecraft-protocol": "^1.51.0",
+    "prismarine-item": "^1.15.0",
+    "ws": "^8.18.0"
+  },
+  "keywords": [
+    "minecraft",
+    "mineflayer",
+    "mcraft",
+    "mcraft.fun",
+    "web",
+    "viewer",
+    "connector",
+    "protocol",
+    "server",
+    "passthrough",
+    "packets",
+    "relay",
+    "retransmit",
+    "prismarine",
+    "prismarine-viewer",
+    "mcraft-fun"
+  ],
+  "repository": "https://github.com/zardoy/mcraft-fun-mineflayer-plugin",
+  "engines": {
+    "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
+  },
+  "scripts": {
+    "watch": "tsc --watch",
+    "build": "tsc",
+    "test-local": "tsx watch example/simple.ts",
+    "test": "vitest",
+    "proxy": "tsx src/proxy-logger/index.ts",
+    "studio": "vite"
+  }
+}

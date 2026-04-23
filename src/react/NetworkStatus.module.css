@@ -1,0 +1,50 @@
+.container {
+  scale: 0.8;
+  transform-origin: left;
+  display: grid;
+  grid-template-columns: auto auto auto auto auto;
+  gap: 2px 4px;
+  font-size: 8px;
+  color: #fff;
+  opacity: 0.8;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  justify-items: center;
+}
+
+.container.websocket {
+  grid-template-columns: auto auto auto;
+}
+
+.iconRow {
+    display: block;
+}
+.arrowRow {
+    scale: 1.5 1;
+}
+
+.dataRow {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 70px;
+  font-size: 5px;
+}
+
+.ping {
+  font-size: 6px;
+}
+
+/* .dataRow > span:nth-child(3) {
+  max-width: 120px;
+} */
+
+.totalRow {
+  grid-column: span 3;
+  font-size: 7px;
+}
+
+.stale {
+  color: #ff4444;
+}

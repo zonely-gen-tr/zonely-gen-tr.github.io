@@ -1,0 +1,15 @@
+.app-status-title-context-info {
+  color: #808080;
+  font-size: 7px;
+}
+
+.description {
+  color: #808080;
+  word-break: break-all;
+  padding: 0 10px;
+  margin-top: 3px;
+}
+
+.last-status {
+  color: #808080;
+}

@@ -1,0 +1,18 @@
+---
+description: Restricts usage of the global Mineflayer `bot` variable to only src/ files; prohibits usage in renderer/. Specifies correct usage of player state and appViewer globals.
+globs: src/**/*.ts,renderer/**/*.ts
+alwaysApply: false
+---
+Ask AI
+
+- The global variable `bot` refers to the Mineflayer bot instance.
+- You may use `bot` directly in any file under the `src/` directory (e.g., `src/mineflayer/playerState.ts`).
+- Do **not** use `bot` directly in any file under the `renderer/` directory or its subfolders (e.g., `renderer/viewer/three/worldrendererThree.ts`).
+- In renderer code, all bot/player state and events must be accessed via explicit interfaces, state managers, or passed-in objects, never by referencing `bot` directly.
+- In renderer code (such as in `WorldRendererThree`), use the `playerState` property (e.g., `worldRenderer.playerState.gameMode`) to access player state. The implementation for `playerState` lives in `src/mineflayer/playerState.ts`.
+- In `src/` code, you may use the global variable `appViewer` from `src/appViewer.ts` directly. Do **not** import `appViewer` or use `window.appViewer`; use the global `appViewer` variable as-is.
+- Some other global variables that can be used without window prefixes are listed in src/globals.d.ts
+
+Rationale: This ensures a clean separation between the Mineflayer logic (server-side/game logic) and the renderer (client-side/view logic), making the renderer portable and testable, and maintains proper usage of global state.
+
+For more general project contributing guides see CONTRIBUTING.md on like how to setup the project. Use pnpm tsc if needed to validate result with typechecking the whole project.

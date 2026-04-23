@@ -1,0 +1,236 @@
+@import url(./screens.css);
+@import url('pixelarticons/fonts/pixelart-icons-font.css');
+
+body {
+  width: 100vw !important;
+  height: 100vh !important;
+  width: 100dvw !important;
+  height: 100dvh !important;
+}
+
+body.rotated {
+  width: 100vh !important;
+  height: 100vw !important;
+  width: 100dvh !important;
+  height: 100dvw !important;
+  transform: rotate(90deg) translateY(-100%);
+  transform-origin: left top;
+}
+
+:root {
+  --guiScaleFactor: 3;
+  --guiScale: 3;
+  --chatWidth: 320px;
+  --chatHeight: 180px;
+  --chatScale: 1;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.lil-gui {
+  top: 20px !important;
+}
+
+a {
+  color: white;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  height: 100vh;
+  overflow: hidden;
+  color: white;
+  color-scheme: dark;
+}
+
+html.disable-assets {
+  --widgets-gui-atlas: none;
+  --title-gui: none;
+}
+
+body {
+  overflow: hidden;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  /* font-family: sans-serif; */
+  background: #333;
+  /* background: linear-gradient(#141e30, #243b55); */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  font-family: minecraft, mojangles, monospace;
+  z-index: -5;
+  touch-action: none;
+}
+
+#react-root {
+  z-index: 9;
+  position: fixed;
+}
+
+.text {
+  color: white;
+  font-size: 10px;
+  text-shadow: 1px 1px #222;
+}
+
+#VRButton {
+  background: rgba(0, 0, 0, 0.3) !important;
+  opacity: 0.7 !important;
+  position: static !important;
+  bottom: 60px !important;
+  z-index: unset !important;
+}
+
+.dirt-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: url('mc-assets/dist/other-textures/latest/gui/options_background.png'), rgba(0, 0, 0, 0.7);
+  background-size: 16px;
+  background-repeat: repeat;
+  width: 100%;
+  height: 100%;
+  transform-origin: top left;
+  transform: scale(2);
+  background-blend-mode: overlay;
+}
+
+/* todo move from here */
+[data-name="TouchMovementArea"] {
+  /* padding-left: calc(env(safe-area-inset-left) / 2);
+  padding-right: calc(env(safe-area-inset-right) / 2);
+  padding-bottom: calc(env(safe-area-inset-bottom) / 2); */
+  margin: calc(var(--touch-movement-buttons-position) * 2);
+  --border: none;
+}
+
+[data-name="TouchMovementArea"]:first-child {
+  --border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-right: 0;
+}
+
+[data-name="TouchMovementArea"]:last-child {
+  margin-left: 0;
+}
+
+[data-name="MovementButton"] {
+  opacity: var(--touch-movement-buttons-opacity);
+  border: var(--border);
+}
+
+@font-face {
+  font-family: minecraft;
+  src: url(../assets/minecraftia.woff);
+}
+
+@font-face {
+  font-family: mojangles;
+  src: url(../assets/mojangles.ttf?inline);
+}
+
+#ui-root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+  transform: scale(var(--guiScale));
+  width: calc(100% / var(--guiScale));
+  height: calc(100% / var(--guiScale));
+  z-index: 8;
+  image-rendering: optimizeSpeed;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: -o-crisp-edges;
+  image-rendering: pixelated;
+  -ms-interpolation-mode: nearest-neighbor;
+}
+
+.overlay-top-scaled, .overlay-bottom-scaled {
+  position: fixed;
+  inset: 0;
+  transform-origin: top left;
+  transform: scale(var(--guiScale));
+  width: calc(100dvw / var(--guiScale));
+  height: calc(100dvh / var(--guiScale));
+  z-index: 80;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.overlay-bottom-scaled {
+  z-index: 1;
+}
+
+#viewer-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  height: 100%;
+  width: 100%;
+  font-size: 0;
+  margin: 0;
+  padding: 0;
+  animation-duration: 0.3s;
+  animation-timing-function: ease-in-out;
+  animation-fill-mode: forwards;
+}
+body::xr-overlay #viewer-canvas {
+  display: none;
+}
+
+.full-svg svg {
+  width: 100%;
+  height: 100%;
+}
+
+.muted {
+  color: #999;
+}
+
+.text-select {
+  user-select: text;
+}
+
+@media screen and (min-width: 430px) {
+  .span-2 {
+    grid-column: span 2;
+  }
+}
+
+@keyframes dive-animation {
+  0% {
+    transform: translateZ(-150px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateZ(0);
+    opacity: 1;
+  }
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}

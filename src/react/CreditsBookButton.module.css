@@ -1,0 +1,27 @@
+.creditsButton {
+  position: absolute;
+  top: 1px;
+  right: -30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: white;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.creditsButton:hover {
+  opacity: 0.9;
+}
+
+.creditsButton:focus:not(:hover) {
+  outline: 1px solid #fff;
+}
+
+.creditsButton svg {
+  width: 15px;
+  height: 15px;
+}

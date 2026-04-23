@@ -1,0 +1,24 @@
+.hint_container {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--safe-area-inset-bottom) + 55px); 
+  margin: 0 auto;
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+  z-index: 1000;
+  text-shadow: 1px 1px 8px rgba(0, 0, 0, 1);
+}
+
+.hint_container > button {
+  width: auto;
+  padding: 0 10px;
+}
+
+.hint_text {
+  color: white;
+  font-size: 10px;
+}

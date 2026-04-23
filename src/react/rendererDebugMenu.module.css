@@ -1,0 +1,34 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 10px;
+  height: 100%;
+  padding-top: env(safe-area-inset-top, 10px);
+  padding-left: env(safe-area-inset-left, 10px);
+  padding-right: env(safe-area-inset-right, 10px);
+  padding-bottom: env(safe-area-inset-bottom, 10px);
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 200px;
+}
+
+.column h3 {
+  margin: 0;
+  padding: 0;
+  font-size: 16px;
+  color: white;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+}
+
+.sliderGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 10px;
+}

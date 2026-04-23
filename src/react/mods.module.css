@@ -1,0 +1,199 @@
+.root {
+  min-height: 0; 
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  padding: 10px;
+  padding-top: 0;
+  box-sizing: border-box;
+  gap: 10px;
+}
+
+.header {
+  display: flex;
+  gap: 5px;
+}
+
+.statsRow {
+  color: #999;
+  font-size: 10px;
+  margin-bottom: 8px;
+}
+
+.statsRow {
+  color: #999;
+  font-size: 10px;
+  margin-bottom: 8px;
+}
+
+.searchBar {
+  flex: 1;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 60% 40%;
+  flex: 1;
+  gap: 10px;
+  overflow: hidden;
+  min-height: 0; /* Important for Firefox */
+}
+
+.verticalContent {
+  display: grid;
+  grid-template-columns: none;
+  grid-template-rows: 60% 40%;
+  overflow: hidden;
+}
+
+.verticalContent .modList {
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+.verticalContent .sidebar {
+  max-height: 100%;
+  width: 100%;
+  overflow-y: auto;
+}
+
+.modList {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  padding: 5px;
+  min-height: 0; /* Important for Firefox */
+  height: 100%;
+  width: 100%;
+}
+
+.sidebar {
+  overflow-y: auto;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+.modInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.modInfoTitle {
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+}
+
+.modInfoText {
+  font-size: 10px;
+  white-space: pre-wrap;
+  color: #bcbcbc;
+}
+
+.modActions {
+  display: flex;
+  gap: 5px;
+}
+
+.modRow {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.modRow:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.modRowTitle {
+  font-size: 12px;
+  color: white;
+  margin-bottom: 4px;
+  display: flex;
+}
+
+.modRowInfo {
+  font-size: 10px;
+  color: #bcbcbc;
+}
+
+.repoHeader {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #bcbcbc;
+  font-size: 8px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.repoHeader:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.repoContent {
+  margin-left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Mod state styles */
+.modRow[data-enabled="false"] {
+  opacity: 0.5;
+}
+
+.modRow[data-enabled="true"] {
+  color: lime;
+}
+
+.modRow[data-enabled="true"] .modRowTitle {
+  color: lime;
+}
+
+/* Error state styles */
+.modRow[data-has-error="true"] {
+  background: rgba(255, 0, 0, 0.1);
+}
+
+.modRow[data-has-error="true"] .modRowTitle {
+  color: #ff6b6b;
+}
+
+.modErrorList {
+  font-size: 8px;
+  color: #ff6b6b;
+  margin-top: 5px;
+  padding-left: 10px;
+  list-style-type: disc;
+}
+
+.fieldEditorTextarea {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  font-size: 7px;
+}
+
+.fieldEditorTextarea {
+  position: absolute;
+
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+}
