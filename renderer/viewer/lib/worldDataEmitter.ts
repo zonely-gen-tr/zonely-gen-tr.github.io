@@ -110,6 +110,13 @@ export class WorldDataEmitter extends (EventEmitter as new () => TypedEmitter<Wo
         }
         return
       }
+      const replayState = (globalThis as any).__replayEntityStates?.get?.(e.id)
+      if (replayState) {
+        e.position = new Vec3(replayState.x, replayState.y, replayState.z)
+        e.pos = e.position
+        if (replayState.yaw !== undefined) e.yaw = replayState.yaw
+        if (replayState.pitch !== undefined) e.pitch = replayState.pitch
+      }
       const normalizedName = e.name ?? knownEntityNames.get(e.id) ?? ((e.type === 'player' || e.username !== undefined) ? 'player' : undefined)
       if (!normalizedName) return // mineflayer received update for not spawned entity
       knownEntityNames.set(e.id, normalizedName)

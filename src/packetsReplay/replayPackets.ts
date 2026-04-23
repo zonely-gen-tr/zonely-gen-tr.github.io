@@ -64,6 +64,7 @@ export function openFile ({ contents, filename = 'unnamed', filesize }: OpenFile
 
 export const startLocalReplayServer = (contents: string) => {
   const { packets, header } = parseReplayContents(contents)
+  replayEntityStateStore.clear()
 
   packetsReplayState.packetsPlayback = []
   packetsReplayState.isOpen = true
@@ -152,13 +153,19 @@ type ReplayEntityState = {
   pitch?: number
 }
 
+const replayEntityStateStore = (() => {
+  const g = globalThis as any
+  g.__replayEntityStates ??= new Map<number, ReplayEntityState>()
+  return g.__replayEntityStates as Map<number, ReplayEntityState>
+})()
+
 const packetAngleToRadians = (angle: unknown) => {
   if (typeof angle !== 'number') return undefined
   return angle / 256 * Math.PI * 2
 }
 
 const mainPacketsReplayer = async (client: ServerClient, packets: ParsedReplayPacket[], ignoreClientPacketsWait: string[] | true = []) => {
-  const replayEntityStates = new Map<number, ReplayEntityState>()
+  const replayEntityStates = replayEntityStateStore
 
   const syncReplayEntity = (entityId: number, moved: boolean, sourcePacket: string) => {
     const entity = bot.entities[entityId]
