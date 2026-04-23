@@ -1136,15 +1136,25 @@ export class Entities {
   updateEntityPosition (entity: import('prismarine-entity').Entity, justAdded: boolean, overrides: { rotation?: { head?: { y: number, x: number } } }) {
     const e = this.entities[entity.id]
     if (!e) return
+    const animatedEntity = e as typeof e & {
+      _positionTween?: TWEEN.Tween<any>
+      _rotationTween?: TWEEN.Tween<any>
+    }
     const ANIMATION_DURATION = justAdded ? 0 : TWEEN_DURATION
     const position = (entity as any).pos ?? entity.position
     if (position) {
-      new TWEEN.Tween(e.position).to({ x: position.x, y: position.y, z: position.z }, ANIMATION_DURATION).start()
+      animatedEntity._positionTween?.stop()
+      animatedEntity._positionTween = new TWEEN.Tween(e.position)
+        .to({ x: position.x, y: position.y, z: position.z }, ANIMATION_DURATION)
+        .start()
     }
     if (entity.yaw) {
       const da = (entity.yaw - e.rotation.y) % (Math.PI * 2)
       const dy = 2 * da % (Math.PI * 2) - da
-      new TWEEN.Tween(e.rotation).to({ y: e.rotation.y + dy }, ANIMATION_DURATION).start()
+      animatedEntity._rotationTween?.stop()
+      animatedEntity._rotationTween = new TWEEN.Tween(e.rotation)
+        .to({ y: e.rotation.y + dy }, ANIMATION_DURATION)
+        .start()
     }
 
     if (e?.playerObject && overrides?.rotation?.head) {
