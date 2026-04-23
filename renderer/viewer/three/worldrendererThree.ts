@@ -192,7 +192,7 @@ export class WorldRendererThree extends WorldRendererCommon {
         }
       }
     }
-    if (isPosUpdate) {
+    if (isPosUpdate && !packetsReplayState.isOpen) {
       this.entities.updateEntityPosition(e, false, overrides)
     } else {
       this.entities.update(e, overrides, packetsReplayState.isOpen)

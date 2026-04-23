@@ -151,6 +151,7 @@ type ReplayEntityState = {
   z: number
   yaw?: number
   pitch?: number
+  updatedAt?: number
 }
 
 const replayEntityStateStore = (() => {
@@ -189,14 +190,28 @@ const mainPacketsReplayer = async (client: ServerClient, packets: ParsedReplayPa
     }
 
     if (sceneEntity?.position) {
-      sceneEntity.position.set(state.x, state.y, state.z)
+      const replayTarget = {
+        x: state.x,
+        y: state.y,
+        z: state.z,
+        yaw: state.yaw,
+        pitch: state.pitch,
+        updatedAt: state.updatedAt ?? performance.now(),
+      }
+      sceneEntity.__replayTarget = replayTarget
+      if (!sceneEntity.__replayInitialized || !moved) {
+        sceneEntity.position.set(state.x, state.y, state.z)
+        sceneEntity.__replayInitialized = true
+      }
       if (sceneEntity.originalEntity?.position) {
         sceneEntity.originalEntity.position.x = state.x
         sceneEntity.originalEntity.position.y = state.y
         sceneEntity.originalEntity.position.z = state.z
       }
       if (state.yaw !== undefined) {
-        sceneEntity.rotation.y = state.yaw
+        if (!moved) {
+          sceneEntity.rotation.y = state.yaw
+        }
         if (sceneEntity.originalEntity) {
           sceneEntity.originalEntity.yaw = state.yaw
         }
@@ -238,6 +253,7 @@ const mainPacketsReplayer = async (client: ServerClient, packets: ParsedReplayPa
           z: Number(data.z ?? 0),
           yaw: packetAngleToRadians(data.yaw),
           pitch: packetAngleToRadians(data.pitch),
+          updatedAt: performance.now(),
         })
         syncReplayEntity(entityId, false, name)
         return
@@ -251,6 +267,7 @@ const mainPacketsReplayer = async (client: ServerClient, packets: ParsedReplayPa
           x: prev.x + (Number(data.dX ?? 0) / REPLAY_RELATIVE_MOVE_SCALE),
           y: prev.y + (Number(data.dY ?? 0) / REPLAY_RELATIVE_MOVE_SCALE),
           z: prev.z + (Number(data.dZ ?? 0) / REPLAY_RELATIVE_MOVE_SCALE),
+          updatedAt: performance.now(),
         }
         if (name === 'entity_move_look') {
           const yaw = packetAngleToRadians(data.yaw)
@@ -270,6 +287,7 @@ const mainPacketsReplayer = async (client: ServerClient, packets: ParsedReplayPa
           x: Number(data.x ?? prev.x),
           y: Number(data.y ?? prev.y),
           z: Number(data.z ?? prev.z),
+          updatedAt: performance.now(),
         }
         const yaw = packetAngleToRadians(data.yaw)
         const pitch = packetAngleToRadians(data.pitch)
@@ -283,7 +301,7 @@ const mainPacketsReplayer = async (client: ServerClient, packets: ParsedReplayPa
         if (entityId === undefined) return
         const prev = replayEntityStates.get(entityId)
         if (!prev) return
-        const next: ReplayEntityState = { ...prev }
+        const next: ReplayEntityState = { ...prev, updatedAt: performance.now() }
         const yaw = packetAngleToRadians(data.yaw)
         const pitch = packetAngleToRadians(data.pitch)
         if (yaw !== undefined) next.yaw = yaw

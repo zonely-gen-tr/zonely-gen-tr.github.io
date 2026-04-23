@@ -100,6 +100,12 @@ function poseToEuler (pose: any, defaultValue?: THREE.Euler) {
   return defaultValue ?? new THREE.Euler()
 }
 
+function approachAngle (current: number, target: number, alpha: number) {
+  const da = (target - current) % (Math.PI * 2)
+  const dy = 2 * da % (Math.PI * 2) - da
+  return current + dy * alpha
+}
+
 function getUsernameTexture ({
   username,
   nameTagBackgroundColor = 'rgba(0, 0, 0, 0.3)',
@@ -367,6 +373,35 @@ export class Entities {
     for (const [entityId, entity] of [...Object.entries(this.entities), ['player_entity', this.playerEntity] as [string, SceneEntity | null]]) {
       if (!entity) continue
       const { playerObject } = entity
+      const replayTarget = (entity as any).__replayTarget as undefined | {
+        x: number
+        y: number
+        z: number
+        yaw?: number
+        pitch?: number
+        updatedAt?: number
+      }
+
+      if (packetsReplayState.isOpen && replayTarget) {
+        const alpha = Math.min(1, dt * 14)
+        const distX = replayTarget.x - entity.position.x
+        const distY = replayTarget.y - entity.position.y
+        const distZ = replayTarget.z - entity.position.z
+        entity.position.x += distX * alpha
+        entity.position.y += distY * alpha
+        entity.position.z += distZ * alpha
+        if (Math.abs(distX) + Math.abs(distY) + Math.abs(distZ) < 0.01) {
+          entity.position.set(replayTarget.x, replayTarget.y, replayTarget.z)
+        }
+        if (replayTarget.yaw !== undefined) {
+          entity.rotation.y = approachAngle(entity.rotation.y, replayTarget.yaw, alpha)
+        }
+        if (playerObject?.animation instanceof WalkingGeneralSwing) {
+          const horizontalGap = Math.hypot(replayTarget.x - entity.position.x, replayTarget.z - entity.position.z)
+          playerObject.animation.isMoving = horizontalGap > 0.015
+          playerObject.animation.isRunning = horizontalGap > 0.08
+        }
+      }
 
       // Update animations
       if (playerObject?.animation) {
