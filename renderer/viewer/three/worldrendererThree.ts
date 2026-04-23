@@ -29,6 +29,7 @@ import { WaypointsRenderer } from './waypoints'
 import { DEFAULT_TEMPERATURE, SkyboxRenderer } from './skyboxRenderer'
 import { FireworksManager } from './fireworks'
 import { downloadWorldGeometry } from './worldGeometryExport'
+import { packetsReplayState } from '../../../src/react/state/packetsReplayState'
 
 type SectionKey = string
 
@@ -159,7 +160,7 @@ export class WorldRendererThree extends WorldRendererCommon {
     if (isPosUpdate) {
       this.entities.updateEntityPosition(e, false, overrides)
     } else {
-      this.entities.update(e, overrides)
+      this.entities.update(e, overrides, packetsReplayState.isOpen)
     }
   }
 

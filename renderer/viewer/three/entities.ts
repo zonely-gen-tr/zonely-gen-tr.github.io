@@ -811,7 +811,7 @@ export class Entities {
     }
   }
 
-  update (entity: SceneEntity['originalEntity'], overrides) {
+  update (entity: SceneEntity['originalEntity'], overrides, skipPositionUpdate = false) {
     const isPlayerModel = entity.name === 'player'
     if (entity.name === 'zombie_villager' || entity.name === 'husk') {
       overrides.texture = `textures/1.16.4/entity/${entity.name === 'zombie_villager' ? 'zombie_villager/zombie_villager.png' : `zombie/${entity.name}.png`}`
@@ -1130,7 +1130,9 @@ export class Entities {
 
     this.updateNameTagVisibility(e)
 
-    this.updateEntityPosition(entity, justAdded, overrides)
+    if (!skipPositionUpdate) {
+      this.updateEntityPosition(entity, justAdded, overrides)
+    }
   }
 
   updateEntityPosition (entity: import('prismarine-entity').Entity, justAdded: boolean, overrides: { rotation?: { head?: { y: number, x: number } } }) {
